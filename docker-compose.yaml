@@ -1,0 +1,42 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres
+    container_name: db
+    volumes:
+      - data-crm:/var/lib/postgresql/data
+    networks:
+      - main
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_DB=crm
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+  crm:
+    build:
+      context: .
+      args:
+        ENV_NAME: development
+    container_name: crm
+    volumes:
+      - .:/app
+    command: python manage.py runserver 0.0.0.0:8000
+    ports:
+      - "8000:8000"
+    networks:
+      - main
+    tty: true
+    environment:
+      - POSTGRES_NAME=crm
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    depends_on:
+      - db
+
+volumes:
+  data-crm:
+
+networks:
+  main:
