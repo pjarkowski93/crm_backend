@@ -1,0 +1,35 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres
+    volumes:
+      - data-crm:/var/lib/postgresql/data
+    networks:
+      - main
+    environment:
+      - POSTGRES_DB=crm
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+  crm:
+    build: .
+    volumes:
+      - app:/app
+    command: python manage.py runserver 0.0.0.0:8000
+    ports:
+      - "8000:8000"
+    networks:
+      - main
+    environment:
+      - POSTGRES_NAME=crm
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    depends_on:
+      - db
+
+volumes:
+  data-crm:
+  app:
+
+networks:
+  main:

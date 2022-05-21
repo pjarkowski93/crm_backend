@@ -1,0 +1,44 @@
+[tool.poetry]
+name = "crm"
+version = "0.1.0"
+description = ""
+authors = ["Team CRM"]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+Django = "4.0.4"
+djangorestframework = "3.13.1"
+django-filter = "21.1"
+
+
+[tool.poetry.dev-dependencies]
+black = "22.3.0"
+isort = "5.10.1"
+pylint = "2.13.9"
+flake8 = "4.0.1"
+pre-commit = "2.19.0"
+
+[tool.black]
+line-length = 88
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+  | ^.*\b(migrations)\b.*$
+)/
+'''
+
+[tool.isort]
+profile = "black"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
