@@ -9,6 +9,7 @@ python = "^3.10"
 Django = "4.0.4"
 djangorestframework = "3.13.1"
 django-filter = "21.1"
+psycopg2-binary = "2.9.3"
 
 
 [tool.poetry.dev-dependencies]
@@ -17,6 +18,8 @@ isort = "5.10.1"
 pylint = "2.13.9"
 flake8 = "4.0.1"
 pre-commit = "2.19.0"
+ipython = "*"
+ipdb = "*"
 
 [tool.black]
 line-length = 88

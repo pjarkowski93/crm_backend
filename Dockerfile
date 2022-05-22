@@ -1,8 +1,8 @@
 FROM python:3.10-alpine
 
-ARG YOUR_ENV
+ARG ENV_NAME
 
-ENV YOUR_ENV=${YOUR_ENV} \
+ENV ENV_NAME=${ENV_NAME} \
   PYTHONFAULTHANDLER=1 \
   PYTHONUNBUFFERED=1 \
   PYTHONHASHSEED=random \
@@ -14,7 +14,9 @@ ENV YOUR_ENV=${YOUR_ENV} \
 RUN apk update && apk add python3-dev \
                         gcc \
                         libffi-dev \
-                        libc-dev
+                        libc-dev \
+                        musl-dev \
+                        postgresql-dev
 
 # System deps:
 RUN pip install "poetry==$POETRY_VERSION"
@@ -26,7 +28,7 @@ ADD crm/ /app/
 
 # Project initialization:
 RUN poetry config virtualenvs.create false \
-  && poetry install $(test "$YOUR_ENV" == production && echo "--no-dev") --no-interaction --no-ansi
+  && poetry install $(test "$ENV_NAME" == production && echo "--no-dev") --no-interaction --no-ansi
 
 # Creating folders, and files for a project:
 COPY . /app

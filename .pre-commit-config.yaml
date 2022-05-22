@@ -20,3 +20,5 @@ repos:
     rev: 4.0.1
     hooks:
       - id: flake8
+        files: ^crm/
+        args: [--config, .flake8]
