@@ -17,9 +17,3 @@ class CustomUserAdmin(UserAdmin):
         "is_active",
     )
     list_filter: Union[list, tuple] = ("is_staff", "is_active")
-    add_fieldsets = UserAdmin.fieldsets + (
-        (
-            None,
-            {"fields": ("birth_date", "uuid")},
-        ),
-    )  # type: ignore

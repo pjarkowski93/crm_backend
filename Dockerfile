@@ -16,9 +16,11 @@ RUN apk update && apk add python3-dev \
                         libffi-dev \
                         libc-dev \
                         musl-dev \
+                        g++ \
                         postgresql-dev
 
 # System deps:
+RUN pip install --upgrade pip setuptools
 RUN pip install "poetry==$POETRY_VERSION"
 
 # Copy only requirements to cache them in docker layer

@@ -11,7 +11,6 @@ class User(AbstractUser):
     Extended user model with new fields
     """
 
-    email = models.EmailField(unique=True)
     uuid = models.UUIDField(default=uuid4)
     birth_date = models.DateField(null=True)
 
