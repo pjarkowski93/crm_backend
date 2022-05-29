@@ -1,3 +1,5 @@
+import datetime
+from typing import Iterable, Optional
 from uuid import uuid4
 
 from django.core.validators import MinLengthValidator
@@ -9,12 +11,12 @@ from user.models import User
 
 class Client(models.Model):
     uuid = models.UUIDField(default=uuid4, unique=True)
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255, unique=True)
     country = models.CharField(max_length=255)
     phone_number = models.CharField(max_length=15)
     address_line = models.CharField(max_length=255)
     city = models.CharField(max_length=100)
-    email = models.EmailField()
+    email = models.EmailField(unique=True)
     nip = models.CharField(max_length=10, validators=[MinLengthValidator(10)])
     trader = models.ForeignKey(
         User, on_delete=models.SET_NULL, null=True, related_name="client"

@@ -4,10 +4,12 @@ from django.contrib import admin
 from import_export.admin import ImportExportModelAdmin
 
 from crm.models import Client, Roadmap, Sale
+from crm.resources import ClientResource, SaleResource
 
 
 @admin.register(Client)
 class ClientAdmin(ImportExportModelAdmin, admin.ModelAdmin):
+    resource_class = ClientResource
     list_filter = ("name", "country", "city", "nip")
     list_display: Union[list, tuple] = (
         "uuid",
@@ -21,6 +23,7 @@ class ClientAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 
 @admin.register(Sale)
 class SaleAdmin(ImportExportModelAdmin, admin.ModelAdmin):
+    resource_class = SaleResource
     list_display: Union[list, tuple] = (
         "uuid",
         "get_client",

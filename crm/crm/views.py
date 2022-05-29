@@ -1,3 +1,4 @@
+import plotly.express as px
 from django.shortcuts import render
 from django_filters import rest_framework as rest_filters
 from rest_framework import permissions, viewsets
@@ -70,3 +71,9 @@ class ChartView(APIView):
             "data": dict(collections.OrderedDict(sorted(data.items()))),
         }
         return render(request, "chart.html", context=my_dict)
+
+
+class ChartView2(APIView):
+    def get(self, request, format=None):
+
+        pass
