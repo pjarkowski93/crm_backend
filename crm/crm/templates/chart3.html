@@ -2,11 +2,15 @@
 
 {% block content %}
 
-    <form method="GET" action="{% url 'chart3' %}">
-        {{ form.as_p}}
-        <button> Submit </button>
+<form method="GET" action="{% url 'chart3' %}" class="build-form">
+        {{ form.as_p }}
+        {{ select.as_p }}
+        <input type = "submit" value = "Submit" class="search_input">
     </form>
 
-    {{chart|safe}}
+    {% if chart %} {{chart|safe}} {% endif %}
+    {% block messages %}
+        {% if message %}<div class='imp_message'>{{ message }}</div>{% endif %}
+    {% endblock %}
 
 {% endblock content %}

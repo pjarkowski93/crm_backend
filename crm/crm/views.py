@@ -1,14 +1,15 @@
 from datetime import datetime
+from typing import Tuple
 
 import plotly.express as px
-from django.db.models import F, Sum
+from django.db.models import F, QuerySet, Sum
 from django.db.models.functions import ExtractMonth
 from django.shortcuts import render
 from django_filters import rest_framework as rest_filters
 from rest_framework import permissions, viewsets
 from rest_framework.views import APIView
 
-from crm.forms import DateForm
+from crm.forms import ClientForm, DateForm
 
 from . import models, serializers
 
@@ -126,22 +127,35 @@ class ChartView3(APIView):
         12: "December",
     }
 
+    def filter_data(
+        self, request, qs: QuerySet
+    ) -> Tuple[QuerySet, Tuple[str, str, str]]:
+        if start_date := request.GET.get("start"):
+            qs = qs.filter(created_date__gte=start_date)
+        if end_date := request.GET.get("end"):
+            qs = qs.filter(created_date__lte=end_date)
+        if client_name := request.GET.get("client"):
+            if not client_name == "all":
+                qs = qs.filter(client__name=client_name)
+        return (
+            qs,
+            (start_date, end_date, client_name),
+        )
+
     def get(self, request, **kwargs):
         all_sales_items = models.Sale.objects.all()
-        if start_date := request.GET.get("start"):
-            all_sales_items = all_sales_items.filter(created_date__gte=start_date)
-        if end_date := request.GET.get("end"):
-            all_sales_items = all_sales_items.filter(created_date__lte=end_date)
+        filtered_qs, data = self.filter_data(request, all_sales_items)
+        start_date, end_date, client_name = data
 
-        all_sales = (
-            all_sales_items.values("created_date")
+        filtered_sales = (
+            filtered_qs.values("created_date")
             .annotate(client_amount=Sum("amount"))
             .annotate(sales_date=F("created_date"), amount=F("client_amount"))
             .annotate(sales_month=ExtractMonth("sales_date"))
             .values("sales_month", "amount")
         )
         to_return = []
-        for sale in all_sales:
+        for sale in filtered_sales:
             to_return.append(
                 {
                     "amount": sale["amount"],
@@ -149,7 +163,28 @@ class ChartView3(APIView):
                     "to_sort": sale["sales_month"],
                 }
             )
-
+        last_value_choose_value = client_name if client_name else "all"
+        client_form = ClientForm(initial={"client": last_value_choose_value})
+        last_date_form_data = {}
+        if start_date and end_date:
+            last_date_form_data = {"start": start_date, "end": end_date}
+        elif start_date and not end_date:
+            last_date_form_data = {
+                "start": start_date,
+            }
+        elif not start_date and end_date:
+            last_date_form_data = {"end": end_date}
+        date_form = DateForm(initial=last_date_form_data)
+        if not to_return:
+            return render(
+                request,
+                "chart3.html",
+                context={
+                    "message": "Lack of data for given filters.",
+                    "form": date_form,
+                    "select": client_form,
+                },
+            )
         fig = px.bar(
             sorted(to_return, key=lambda d: d["to_sort"]),
             x="sales_month",
@@ -162,5 +197,9 @@ class ChartView3(APIView):
         fig.update_yaxes(automargin=True, dtick=100000)
         chart = fig.to_html()
 
-        context = {"chart": chart, "form": DateForm}
+        context = {
+            "chart": chart,
+            "form": date_form,
+            "select": client_form,
+        }
         return render(request, "chart3.html", context)
