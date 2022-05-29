@@ -21,6 +21,6 @@ from crm import urls as crm_urls
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("", include(user_urls)),
+    path("user/", include(user_urls)),
     path("", include(crm_urls)),
 ]

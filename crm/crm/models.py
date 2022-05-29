@@ -46,8 +46,8 @@ class Sale(models.Model):
     amount = models.DecimalField(max_digits=20, decimal_places=2)
     currency = models.CharField(max_length=3, choices=CURRENCY_CHOICES)
     brand = models.CharField(max_length=255, null=True)
-    sale_date_from = models.DateField(null=True)
-    sale_date_to = models.DateField(null=True)
+    sale_date_from = models.DateField(null=True, blank=True)
+    sale_date_to = models.DateField(null=True, blank=True)
     created_date = models.DateField(auto_now_add=True)
 
     class Meta:
