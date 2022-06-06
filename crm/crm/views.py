@@ -1,4 +1,3 @@
-from datetime import datetime
 from typing import Tuple
 
 import plotly.express as px

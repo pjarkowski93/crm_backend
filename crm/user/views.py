@@ -1,21 +1,39 @@
-from rest_framework import permissions, viewsets
+from django.contrib.auth import authenticate, login
+from django.shortcuts import render
+from rest_framework import generics, permissions, viewsets
 from rest_framework.authtoken.models import Token
-from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.response import Response
+from user.forms import LoginForm
 from user.models import User
 from user.serializers import UserSerializer
 
 
-class AuthView(ObtainAuthToken):
+def home(request):
+    return render(request, "login.html", context={"form": LoginForm})
+
+
+class AuthView(generics.CreateAPIView):
     def post(self, request, *args, **kwargs):
-        serializer = self.serializer_class(
-            data=request.data, context={"request": request}
+        import pdb
+
+        pdb.set_trace()
+        login_form = LoginForm(
+            username=request.data["username"], password=request.data["password"]
         )
-        serializer.is_valid(raise_exception=True)
-        user = serializer.validated_data["user"]
-        token, created = Token.objects.get_or_create(user=user)
+        if not login_form.is_valid():
+            return Response(status=400, template_name="dashboard/index.html")
+        user = authenticate(
+            username=login_form.cleaned_data["username"],
+            password=login_form.cleaned_data["password"],
+        )
+        if user is not None:
+            login(request, user)
+            message = f"Hello {user.username}! You have been logged in"
+        else:
+            message = "Login failed!"
         return Response(
-            {"token": token.key, "user_uuid": user.uuid, "email": user.email}
+            {"user_uuid": user.uuid, "email": user.email, "message": message},
+            template_name="dashboard/index.html",
         )
 
 

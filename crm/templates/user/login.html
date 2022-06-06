@@ -1,0 +1,20 @@
+{% block content %}
+    <form action="{% url 'users:auth' %}" method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <div class="input-group">
+            <div class="input-group flex-nowrap mb-3 mt-3">
+                <span class="input-group-text" id="addon-wrapping">Username</span>
+                <input type="text" class="form-control" placeholder="Username" aria-label="Username" aria-describedby="addon-wrapping">
+            </div>
+            <div class="input-group flex-nowrap mb-3">
+                <span class="input-group-text" id="addon-wrapping">Password</span>
+                <input type="password" class="form-control" placeholder="Password" aria-label="Password" aria-describedby="addon-wrapping">
+            </div>
+        </div>
+        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+            <input type = "submit" value = "Submit" class="btn btn-primary me-md-2">
+        </div>
+    </form>
+
+{% endblock content %}
