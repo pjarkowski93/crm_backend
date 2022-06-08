@@ -1,4 +1,4 @@
-from django.urls import include, path
+from django.urls import path
 from rest_framework import routers
 
 from . import views
@@ -9,8 +9,7 @@ router.register("clients", views.ClientViewSet, basename="clients")
 router.register("roadmaps", views.RoadmapViewSet, basename="roadmaps")
 
 urlpatterns = [
-    # path("", include(router.urls)),
-    path("", views.IndexView.as_view(), name="index"),
+    path("home/", views.IndexView.as_view(), name="home"),
     path("charts/", views.ChartView.as_view(), name="chart"),
     path("charts2/", views.ChartView2.as_view(), name="chart2"),
     path("charts3/", views.ChartView3.as_view(), name="chart3"),

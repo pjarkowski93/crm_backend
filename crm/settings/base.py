@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     "user",
     "crm",
     "import_export",
+    "crispy_forms",
 ]
 
 MIDDLEWARE = [
@@ -139,5 +140,11 @@ REST_FRAMEWORK = {
     ],
 }
 
-LOGOUT_REDIRECT_URL = "index"
-LOGIN_REDIRECT_URL = "/"
+
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+MEDIA_URL = "/media/"
+
+CRISPY_TEMPLATE_PACK = "bootstrap4"
+LOGIN_URL = "login"
+LOGIN_REDIRECT_URL = "profile"
+LOGOUT_REDIRECT_URL = "login"

@@ -49,7 +49,7 @@ class ClientViewSet(viewsets.ModelViewSet):
 
 class IndexView(APIView):
     def get(self, request, **kwargs):
-        return render(request, "dashboard/index.html")
+        return render(request, "dashboard.html")
 
 
 class ChartView(APIView):
