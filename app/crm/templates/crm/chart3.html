@@ -1,0 +1,24 @@
+{% extends 'partials/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+    <form method="GET" action="{% url 'chart3' %}" class="build-form">
+        {% csrf_token %}
+        {{ form|crispy }}
+        {{ select|crispy }}
+        <input type="submit" value="Submit" class="search_input">
+    </form>
+
+    {% if chart %} {{chart|safe}} {% endif %}
+    {% block messages %}
+        {% if message %}<div class='imp_message'>{{ message }}</div>{% endif %}
+    {% endblock %}
+    <form method="POST" action="{% url 'upload_files' %}" value="{{chart}}" class="build-form mb-5">
+        {% csrf_token %}
+        <label for="file_name">File name</label>
+        <input type="text" id="file_name" name="file_name">
+        <input type="hidden" id="chart" name="chart" value="{{chart}}">
+        <input type="submit" value="Save" class="submit_btn btn label-success">
+    </form>
+
+{% endblock content %}

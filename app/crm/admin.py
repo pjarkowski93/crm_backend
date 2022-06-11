@@ -1,10 +1,9 @@
 from typing import Union
 
-from django.contrib import admin
-from import_export.admin import ImportExportModelAdmin
-
 from crm.models import Client, Roadmap, Sale
 from crm.resources import ClientResource, SaleResource
+from django.contrib import admin
+from import_export.admin import ImportExportModelAdmin
 
 
 @admin.register(Client)

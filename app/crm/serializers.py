@@ -1,6 +1,5 @@
-from rest_framework import serializers
-
 from crm.models import Client, Roadmap, Sale
+from rest_framework import serializers
 
 
 class SaleSerializer(serializers.ModelSerializer):

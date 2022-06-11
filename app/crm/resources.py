@@ -1,9 +1,8 @@
 from typing import Any, Dict
 
+from crm.models import Client, Sale
 from import_export import fields, resources
 from import_export.widgets import ForeignKeyWidget
-
-from crm.models import Client, Sale
 
 
 class SaleResource(resources.ModelResource):

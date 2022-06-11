@@ -1,0 +1,19 @@
+{% extends 'partials/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+    {% block messages %}
+        {% if message %}<div class='alert alert-success'>{{ message }}</div>{% endif %}
+    {% endblock %}
+    {% csrf_token %}
+    <form method="POST" action="{% url 'send_email' %}" class="build-form">
+        {{ form|crispy }}
+        <input type="submit" value="Submit" class="btn btn-primary mt-3">
+    </form>
+    <select class="selectpicker" data-live-search="true" multiple="multiple" name="option" id="option">
+        {% for file in files %}
+           <option value="{{ file.uuid }}">{{ file.file_name }}</option>
+        {% endfor %}
+  </select>
+
+{% endblock content %}

@@ -1,10 +1,10 @@
-import datetime
-from typing import Iterable, Optional
 from uuid import uuid4
 
+from django.contrib.auth import get_user_model
 from django.core.validators import MinLengthValidator
 from django.db import models
-from user.models import User
+
+User = get_user_model()
 
 # Create your models here.
 
@@ -79,3 +79,12 @@ class Roadmap(models.Model):
 
     def __str__(self) -> str:
         return f"Roadmap ({self.client.name})"
+
+
+class Files(models.Model):
+    uuid = models.UUIDField(default=uuid4, unique=True)
+    user = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, related_name="files"
+    )
+    file_name = models.CharField(max_length=255)
+    path_to_file = models.CharField(max_length=255)

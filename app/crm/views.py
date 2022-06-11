@@ -1,16 +1,23 @@
+import os
 from typing import Tuple
 
+import pdfkit
 import plotly.express as px
+from crm.forms import ClientForm, DateForm, PDFForm
+from crm.utils import EmailSender
+from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.db.models import F, QuerySet, Sum
 from django.db.models.functions import ExtractMonth
-from django.shortcuts import render
+from django.http import HttpResponse
+from django.shortcuts import redirect, render
 from django_filters import rest_framework as rest_filters
 from rest_framework import permissions, viewsets
 from rest_framework.views import APIView
 
-from crm.forms import ClientForm, DateForm
-
 from . import models, serializers
+
+User = get_user_model()
 
 
 class SaleViewSet(viewsets.ModelViewSet):
@@ -49,7 +56,7 @@ class ClientViewSet(viewsets.ModelViewSet):
 
 class IndexView(APIView):
     def get(self, request, **kwargs):
-        return render(request, "dashboard.html")
+        return render(request, "crm/dashboard.html")
 
 
 class ChartView(APIView):
@@ -83,7 +90,7 @@ class ChartView(APIView):
         chart = fig.to_html()
 
         context = {"chart": chart}
-        return render(request, "chart.html", context)
+        return render(request, "crm/chart.html", context)
 
 
 class ChartView2(APIView):
@@ -107,7 +114,7 @@ class ChartView2(APIView):
         chart = fig.to_html()
 
         context = {"chart": chart}
-        return render(request, "chart2.html", context)
+        return render(request, "crm/chart2.html", context)
 
 
 class ChartView3(APIView):
@@ -201,4 +208,48 @@ class ChartView3(APIView):
             "form": date_form,
             "select": client_form,
         }
-        return render(request, "chart3.html", context)
+        return render(request, "crm/chart3.html", context)
+
+
+class UploadFile(APIView):
+    def post(self, request, *args, **kwargs):
+        file_name = request.POST["file_name"]
+        chart = request.POST["chart"]
+        if len(file_name) > 4 and file_name[-4] != ".pdf":
+            file_name = f"{file_name}.pdf"
+        path_to_save = os.path.join(settings.MEDIA_ROOT, file_name)
+        if pdfkit.from_string(chart, path_to_save):
+            if models.Files.objects.filter(path_to_file=path_to_save).exists():
+                return HttpResponse(status=400, content={"file_name": "Already exists"})
+            my_user = User.objects.all().first()
+            models.Files.objects.create(
+                user=my_user, file_name=file_name, path_to_file=path_to_save
+            )
+        else:
+            return HttpResponse(status=400)
+
+        return redirect("home")
+
+
+class SendPDFView(APIView):
+    def get(self, request, **kwargs):
+        context = {"form": PDFForm(), "files": models.Files.objects.all()}
+        return render(request, "crm/pdf_sender.html", context=context)
+
+    def post(self, request, *args, **kwargs):
+        request_data = request.data
+        files_to_send = models.Files.objects.filter(
+            uuid__in=request_data.getlist("files")
+        )
+        sender = EmailSender()
+        sender.send(
+            recipient=request_data["send_to"],
+            message=request_data["message"],
+            subject=request_data["subject"],
+            files=files_to_send,
+        )
+        context = {
+            "form": PDFForm(initial=request_data),
+            "message": f"Email has been sent to {request_data['send_to']}.",
+        }
+        return render(request, "crm/pdf_sender.html", context=context)

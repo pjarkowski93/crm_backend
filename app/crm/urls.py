@@ -13,4 +13,6 @@ urlpatterns = [
     path("charts/", views.ChartView.as_view(), name="chart"),
     path("charts2/", views.ChartView2.as_view(), name="chart2"),
     path("charts3/", views.ChartView3.as_view(), name="chart3"),
+    path("upload/", views.UploadFile.as_view(), name="upload_files"),
+    path("send_email/", views.SendPDFView.as_view(), name="send_email"),
 ]

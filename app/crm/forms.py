@@ -1,6 +1,5 @@
+from crm.models import Client, Files
 from django import forms
-
-from crm.models import Client
 
 
 class DateForm(forms.Form):
@@ -22,3 +21,16 @@ class ClientForm(forms.Form):
         ("all", "all"),
     )
     client = forms.ChoiceField(choices=sorted(CHOICES, key=lambda tup: tup[0]))
+
+
+class PDFForm(forms.Form):
+    FILES_CHOICE = [
+        (str(file["uuid"]), file["file_name"])
+        for file in Files.objects.all().values("file_name", "uuid")
+    ]
+    files = forms.MultipleChoiceField(
+        choices=FILES_CHOICE, widget=forms.CheckboxSelectMultiple()
+    )
+    send_to = forms.EmailField()
+    message = forms.CharField()
+    subject = forms.CharField()
