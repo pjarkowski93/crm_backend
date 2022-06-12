@@ -76,21 +76,27 @@ class ChartView(APIView):
             )
             .annotate()
         )
-        fig = px.bar(
-            sales,
-            x="brand_name",
-            y="brand_amount",
-            color="client_name",
-            barmode="group",
-            title="Sum amount per brand and client",
-            text="client_name",
-            height=900,
-        )
-        fig.update_yaxes(automargin=True, dtick=100000)
-        chart = fig.to_html()
+        if sales:
+            fig = px.bar(
+                sales,
+                x="brand_name",
+                y="brand_amount",
+                color="client_name",
+                barmode="group",
+                title="Sum amount per brand and client",
+                text="client_name",
+                height=900,
+            )
+            fig.update_yaxes(automargin=True, dtick=100000)
+            chart = fig.to_html()
 
-        context = {"chart": chart}
-        return render(request, "crm/chart.html", context)
+            context = {"chart": chart}
+            return render(request, "crm/chart.html", context)
+        return render(
+            request,
+            "crm/dashboard.html",
+            context={"message": "No data for the chart."},
+        )
 
 
 class ChartView2(APIView):
@@ -101,20 +107,26 @@ class ChartView2(APIView):
             .annotate(client_amount=Sum("amount"))
             .annotate(name=F("client__name"), amount=F("client_amount"))
         )
-        fig = px.bar(
-            all_sales,
-            x="name",
-            y="amount",
-            color="name",
-            title="Sum amount per client",
-            text_auto=".2s",
-            height=900,
-        )
-        fig.update_yaxes(automargin=True, dtick=100000)
-        chart = fig.to_html()
+        if all_sales:
+            fig = px.bar(
+                all_sales,
+                x="name",
+                y="amount",
+                color="name",
+                title="Sum amount per client",
+                text_auto=".2s",
+                height=900,
+            )
+            fig.update_yaxes(automargin=True, dtick=100000)
+            chart = fig.to_html()
 
-        context = {"chart": chart}
-        return render(request, "crm/chart2.html", context)
+            context = {"chart": chart}
+            return render(request, "crm/chart2.html", context)
+        return render(
+            request,
+            "crm/dashboard.html",
+            context={"message": "No data for the chart."},
+        )
 
 
 class ChartView3(APIView):
@@ -160,55 +172,59 @@ class ChartView3(APIView):
             .annotate(sales_month=ExtractMonth("sales_date"))
             .values("sales_month", "amount")
         )
-        to_return = []
-        for sale in filtered_sales:
-            to_return.append(
-                {
-                    "amount": sale["amount"],
-                    "sales_month": self.MONTHS[sale["sales_month"]],
-                    "to_sort": sale["sales_month"],
+        if filtered_sales:
+            to_return = []
+            for sale in filtered_sales:
+                to_return.append(
+                    {
+                        "amount": sale["amount"],
+                        "sales_month": self.MONTHS[sale["sales_month"]],
+                        "to_sort": sale["sales_month"],
+                    }
+                )
+            last_value_choose_value = client_name if client_name else "all"
+            client_form = ClientForm(initial={"client": last_value_choose_value})
+            last_date_form_data = {}
+            if start_date and end_date:
+                last_date_form_data = {"start": start_date, "end": end_date}
+            elif start_date and not end_date:
+                last_date_form_data = {
+                    "start": start_date,
                 }
+            elif not start_date and end_date:
+                last_date_form_data = {"end": end_date}
+            date_form = DateForm(initial=last_date_form_data)
+            if not to_return:
+                return render(
+                    request,
+                    "chart3.html",
+                    context={
+                        "message": "Lack of data for given filters.",
+                        "form": date_form,
+                        "select": client_form,
+                    },
+                )
+            fig = px.bar(
+                sorted(to_return, key=lambda d: d["to_sort"]),
+                x="sales_month",
+                y="amount",
+                color="sales_month",
+                title="Sales per month",
+                text_auto=".2s",
+                height=800,
             )
-        last_value_choose_value = client_name if client_name else "all"
-        client_form = ClientForm(initial={"client": last_value_choose_value})
-        last_date_form_data = {}
-        if start_date and end_date:
-            last_date_form_data = {"start": start_date, "end": end_date}
-        elif start_date and not end_date:
-            last_date_form_data = {
-                "start": start_date,
-            }
-        elif not start_date and end_date:
-            last_date_form_data = {"end": end_date}
-        date_form = DateForm(initial=last_date_form_data)
-        if not to_return:
-            return render(
-                request,
-                "chart3.html",
-                context={
-                    "message": "Lack of data for given filters.",
-                    "form": date_form,
-                    "select": client_form,
-                },
-            )
-        fig = px.bar(
-            sorted(to_return, key=lambda d: d["to_sort"]),
-            x="sales_month",
-            y="amount",
-            color="sales_month",
-            title="Sales per month",
-            text_auto=".2s",
-            height=800,
-        )
-        fig.update_yaxes(automargin=True, dtick=100000)
-        chart = fig.to_html()
+            fig.update_yaxes(automargin=True, dtick=100000)
+            chart = fig.to_html()
 
-        context = {
-            "chart": chart,
-            "form": date_form,
-            "select": client_form,
-        }
-        return render(request, "crm/chart3.html", context)
+            context = {
+                "chart": chart,
+                "form": date_form,
+                "select": client_form,
+            }
+            return render(request, "crm/chart3.html", context)
+        return render(
+            request, "crm/dashboard.html", context={"message": "No data for the chart."}
+        )
 
 
 class UploadFile(APIView):

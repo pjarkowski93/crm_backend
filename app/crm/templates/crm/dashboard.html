@@ -1,4 +1,7 @@
 {% extends "partials/base.html" %}
 {% block content %}
+{% block messages %}
+    {% if message %}<div class='imp_message'>{{ message }}</div>{% endif %}
+{% endblock %}
     <h1>Home Page</h1>
 {% endblock content %}

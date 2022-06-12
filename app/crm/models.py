@@ -3,6 +3,7 @@ from uuid import uuid4
 from django.contrib.auth import get_user_model
 from django.core.validators import MinLengthValidator
 from django.db import models
+from django.forms import FileField
 
 User = get_user_model()
 
@@ -22,6 +23,7 @@ class Client(models.Model):
         User, on_delete=models.SET_NULL, null=True, related_name="client"
     )
     created_date = models.DateField(auto_now_add=True)
+    external_id = models.UUIDField(unique=True, null=True, blank=True)
 
     class Meta:
         db_table = "client"
@@ -49,6 +51,7 @@ class Sale(models.Model):
     sale_date_from = models.DateField(null=True, blank=True)
     sale_date_to = models.DateField(null=True, blank=True)
     created_date = models.DateField(auto_now_add=True)
+    external_id = models.UUIDField(unique=True, null=True, blank=True)
 
     class Meta:
         db_table = "sale"
@@ -68,6 +71,7 @@ class Roadmap(models.Model):
     planned_amount = models.DecimalField(max_digits=20, decimal_places=2)
     target_date = models.DateField()
     created_date = models.DateField(auto_now_add=True)
+    external_id = models.UUIDField(unique=True, null=True, blank=True)
 
     class Meta:
         db_table = "Roadmap"
@@ -86,5 +90,6 @@ class Files(models.Model):
     user = models.ForeignKey(
         User, on_delete=models.SET_NULL, null=True, related_name="files"
     )
+    file = FileField(max_length=255)
     file_name = models.CharField(max_length=255)
     path_to_file = models.CharField(max_length=255)

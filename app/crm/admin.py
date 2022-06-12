@@ -21,7 +21,7 @@ class ClientAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 
 
 @admin.register(Sale)
-class SaleAdmin(ImportExportModelAdmin, admin.ModelAdmin):
+class SaleAdmin(ImportExportModelAdmin):
     resource_class = SaleResource
     list_display: Union[list, tuple] = (
         "uuid",
