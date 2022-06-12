@@ -9,7 +9,7 @@ from import_export.admin import ImportExportModelAdmin
 @admin.register(Client)
 class ClientAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     resource_class = ClientResource
-    list_filter = ("name", "country", "city", "nip")
+    list_filter = ("name", "country", "city", "nip", "trader__email")
     list_display: Union[list, tuple] = (
         "uuid",
         "name",
@@ -17,7 +17,12 @@ class ClientAdmin(ImportExportModelAdmin, admin.ModelAdmin):
         "city",
         "email",
         "nip",
+        "get_trader",
     )
+
+    @admin.display(ordering="trader__email", description="Trader")
+    def get_trader(self, client_obj):
+        return client_obj.trader.email
 
 
 @admin.register(Sale)
