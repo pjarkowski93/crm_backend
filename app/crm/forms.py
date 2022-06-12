@@ -1,8 +1,9 @@
+from crm.models import Client, Files
 from django import forms
 from django.db import connection
 
-from crm.models import Client, Files
 all_tables = connection.introspection.table_names()
+
 
 def get_client_choices():
     choices = [("all", "all")]
@@ -12,6 +13,7 @@ def get_client_choices():
                 choices.append((client["name"], client["name"]))
     return choices
 
+
 def get_files_choices():
     choices = []
     if "crm_files" in all_tables:
@@ -19,6 +21,7 @@ def get_files_choices():
             for file in Files.objects.all().values("uuid", "file_name"):
                 choices.append((str(file["uuid"]), file["file_name"]))
     return choices
+
 
 class DateForm(forms.Form):
     start = forms.DateField(
@@ -30,10 +33,20 @@ class DateForm(forms.Form):
 
 
 class ClientForm(forms.Form):
-    client = forms.ChoiceField(choices=sorted(get_client_choices(), key=lambda tup: tup[0]))
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.fields["client"].choices = get_client_choices()
+
+    client = forms.ChoiceField(
+        choices=sorted(get_client_choices(), key=lambda tup: tup[0])
+    )
 
 
 class PDFForm(forms.Form):
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.fields["files"].choices = get_files_choices()
+
     files = forms.MultipleChoiceField(
         choices=get_files_choices(), widget=forms.CheckboxSelectMultiple()
     )

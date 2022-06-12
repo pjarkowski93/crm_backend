@@ -11,7 +11,6 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.db.models import F, QuerySet, Sum
-from django.db.models.functions import ExtractMonth
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django_filters import rest_framework as rest_filters
@@ -67,6 +66,8 @@ class ChartView(APIView):
     List all snippets, or create a new snippet.
     """
 
+    permission_classes = [permissions.IsAuthenticated]
+
     def get(self, request, **kwargs):
         sales = (
             models.Sale.objects.all()
@@ -86,7 +87,7 @@ class ChartView(APIView):
                 y="brand_amount",
                 color="client_name",
                 barmode="group",
-                title="Sum amount per brand and client",
+                title="Suma sprzedaży marka-klient",
                 text="client_name",
                 height=900,
             )
@@ -95,11 +96,13 @@ class ChartView(APIView):
 
             context = {"chart": chart}
             return render(request, "crm/chart.html", context)
-        messages.warning(request, "No data for the chart.")
+        messages.warning(request, "Brak danych dla podanych filtrów.")
         return redirect("home")
 
 
 class ChartView2(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
     def get(self, request, **kwargs):
         all_sales = (
             models.Sale.objects.all()
@@ -113,7 +116,7 @@ class ChartView2(APIView):
                 x="name",
                 y="amount",
                 color="name",
-                title="Sum amount per client",
+                title="Suma sprzedaży dla każdego klienta",
                 text_auto=".2s",
                 height=900,
             )
@@ -122,11 +125,12 @@ class ChartView2(APIView):
 
             context = {"chart": chart}
             return render(request, "crm/chart2.html", context)
-        messages.warning(request, "No data for the chart.")
+        messages.warning(request, "Brak danych dla podanych filtrów.")
         return redirect("home")
 
 
 class ChartView3(APIView):
+    permission_classes = [permissions.IsAuthenticated]
     MONTHS = {
         1: "January",
         2: "February",
@@ -141,43 +145,62 @@ class ChartView3(APIView):
         11: "November",
         12: "December",
     }
+    REVERSE_MONTHS = {
+        month_name: month_value for month_value, month_name in MONTHS.items()
+    }
 
     def filter_data(
         self, request, qs: QuerySet
     ) -> Tuple[QuerySet, Tuple[str, str, str]]:
+        three_months = datetime.date.today() - relativedelta(months=+3)
+        current_date = datetime.date.today().strftime("%Y-%m-%d")
         if start_date := request.GET.get("start"):
-            qs = qs.filter(created_date__gte=start_date)
+            qs = qs.filter(sale_date_from__isnull=False, sale_date_from__gte=start_date)
+        else:
+            qs = qs.filter(
+                sale_date_from__isnull=False, sale_date_from__gte=three_months
+            )
         if end_date := request.GET.get("end"):
-            qs = qs.filter(created_date__lte=end_date)
+            qs = qs.filter(sale_date_from__isnull=False, sale_date_from__lte=end_date)
+        else:
+            qs = qs.filter(
+                sale_date_from__isnull=False, sale_date_from__lte=current_date
+            )
         if client_name := request.GET.get("client"):
             if not client_name == "all":
                 qs = qs.filter(client__name=client_name)
+        months_to_filter = []
+        for sale_obj in qs:
+            months_to_filter.append(self.MONTHS[sale_obj.sale_date_from.month])
+
+        sales_month = models.SaleMonths.objects.filter(
+            sale__in=qs, sale_month__in=months_to_filter
+        )
+
+        if not start_date:
+            start_date = three_months
+        if not end_date:
+            end_date = current_date
+
         return (
-            qs,
+            sales_month.annotate(client_amount=Sum("sale_month_amount"))
+            .annotate(amount=F("client_amount"), sales_month=F("sale_month"))
+            .values("sales_month", "amount"),
             (start_date, end_date, client_name),
         )
 
     def get(self, request, **kwargs):
-        three_months = datetime.date.today() - relativedelta(months=+3)
-        all_sales_items = models.Sale.objects.filter(created_date__lte=three_months)
-        filtered_qs, data = self.filter_data(request, all_sales_items)
+        all_sales_items = models.Sale.objects.all()
+        filtered_sales, data = self.filter_data(request, all_sales_items)
         start_date, end_date, client_name = data
-
-        filtered_sales = (
-            filtered_qs.values("created_date")
-            .annotate(client_amount=Sum("amount"))
-            .annotate(sales_date=F("created_date"), amount=F("client_amount"))
-            .annotate(sales_month=ExtractMonth("sales_date"))
-            .values("sales_month", "amount")
-        )
         if filtered_sales:
             to_return = []
             for sale in filtered_sales:
                 to_return.append(
                     {
                         "amount": sale["amount"],
-                        "sales_month": self.MONTHS[sale["sales_month"]],
-                        "to_sort": sale["sales_month"],
+                        "sales_month": sale["sales_month"],
+                        "to_sort": self.REVERSE_MONTHS[sale["sales_month"]],
                     }
                 )
             last_value_choose_value = client_name if client_name else "all"
@@ -197,7 +220,7 @@ class ChartView3(APIView):
                     request,
                     "chart3.html",
                     context={
-                        "message": "Lack of data for given filters.",
+                        "message": "Brak danych dla podanych filtrów.",
                         "form": date_form,
                         "select": client_form,
                     },
@@ -207,7 +230,7 @@ class ChartView3(APIView):
                 x="sales_month",
                 y="amount",
                 color="sales_month",
-                title="Sales per month",
+                title="Miesięczna sprzedaż",
                 text_auto=".2s",
                 height=800,
             )
@@ -220,15 +243,24 @@ class ChartView3(APIView):
                 "select": client_form,
             }
             return render(request, "crm/chart3.html", context)
-        messages.warning(request, "No data for the chart.", extra_tags="alert")
+        messages.warning(
+            request, "Brak danych dla podanych filtrów.", extra_tags="alert"
+        )
         return redirect("home")
 
 
 class UploadFile(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
     def post(self, request, *args, **kwargs):
         file_name = request.POST["file_name"]
         chart = request.POST["chart"]
-        if len(file_name) > 4 and file_name[-4] != ".pdf":
+        if len(file_name) > 4:
+            if file_name[-4] != ".pdf":
+                file_name = f"{file_name}.pdf"
+            else:
+                file_name = f"{file_name}.pdf"
+        else:
             file_name = f"{file_name}.pdf"
         path_to_save = os.path.join(settings.MEDIA_ROOT, file_name)
         if pdfkit.from_string(chart, path_to_save):
@@ -245,6 +277,8 @@ class UploadFile(APIView):
 
 
 class SendPDFView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
     def get(self, request, **kwargs):
         context = {"form": PDFForm(), "files": models.Files.objects.all()}
         return render(request, "crm/pdf_sender.html", context=context)

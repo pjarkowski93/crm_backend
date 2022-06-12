@@ -1,8 +1,10 @@
+import datetime
 from uuid import uuid4
 
 from django.contrib.auth import get_user_model
 from django.core.validators import MinLengthValidator
 from django.db import models
+from django.db.models.functions import ExtractMonth
 from django.forms import FileField
 
 User = get_user_model()
@@ -61,8 +63,52 @@ class Sale(models.Model):
             ("can_view_all_sales", "Can view all sales"),
         ]
 
+    def save(self, *args, **kwargs) -> None:
+        MONTHS = {
+            1: "January",
+            2: "February",
+            3: "March",
+            4: "April",
+            5: "May",
+            6: "June",
+            7: "July",
+            8: "August",
+            9: "September",
+            10: "October",
+            11: "November",
+            12: "December",
+        }
+        if not self.pk or not self.months.all().exists():
+            sale_obj = super().save(*args, **kwargs)
+            to_save = []
+            _divaded_by = 0
+            print(sale_obj)
+            for month in range(self.sale_date_from.month, self.sale_date_to.month):
+                _divaded_by += 1
+            for month in range(self.sale_date_from.month, self.sale_date_to.month):
+                to_save.append(
+                    SaleMonths.objects.update_or_create(
+                        sale=self,
+                        sale_month=MONTHS[month],
+                        sale_month_amount=self.amount / _divaded_by,
+                    )
+                )
+        else:
+            return super().save(*args, **kwargs)
+
     def __str__(self):
         return f"Sale ({self.client.name} - {self.brand})"
+
+
+class SaleMonths(models.Model):
+    uuid = models.UUIDField(default=uuid4, unique=True)
+    sale = models.ForeignKey(
+        Sale, on_delete=models.SET_NULL, null=True, related_name="months"
+    )
+    sale_month_amount = models.DecimalField(
+        max_digits=20, decimal_places=2, null=True, blank=True
+    )
+    sale_month = models.CharField(max_length=10)
 
 
 class Roadmap(models.Model):
