@@ -1,3 +1,4 @@
+import datetime
 import os
 from typing import Tuple
 
@@ -5,7 +6,9 @@ import pdfkit
 import plotly.express as px
 from crm.forms import ClientForm, DateForm, PDFForm
 from crm.utils import EmailSender
+from dateutil.relativedelta import relativedelta
 from django.conf import settings
+from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.db.models import F, QuerySet, Sum
 from django.db.models.functions import ExtractMonth
@@ -92,11 +95,8 @@ class ChartView(APIView):
 
             context = {"chart": chart}
             return render(request, "crm/chart.html", context)
-        return render(
-            request,
-            "crm/dashboard.html",
-            context={"message": "No data for the chart."},
-        )
+        messages.warning(request, "No data for the chart.")
+        return redirect("home")
 
 
 class ChartView2(APIView):
@@ -122,11 +122,8 @@ class ChartView2(APIView):
 
             context = {"chart": chart}
             return render(request, "crm/chart2.html", context)
-        return render(
-            request,
-            "crm/dashboard.html",
-            context={"message": "No data for the chart."},
-        )
+        messages.warning(request, "No data for the chart.")
+        return redirect("home")
 
 
 class ChartView3(APIView):
@@ -161,7 +158,8 @@ class ChartView3(APIView):
         )
 
     def get(self, request, **kwargs):
-        all_sales_items = models.Sale.objects.all()
+        three_months = datetime.date.today() - relativedelta(months=+3)
+        all_sales_items = models.Sale.objects.filter(created_date__lte=three_months)
         filtered_qs, data = self.filter_data(request, all_sales_items)
         start_date, end_date, client_name = data
 
@@ -222,9 +220,8 @@ class ChartView3(APIView):
                 "select": client_form,
             }
             return render(request, "crm/chart3.html", context)
-        return render(
-            request, "crm/dashboard.html", context={"message": "No data for the chart."}
-        )
+        messages.warning(request, "No data for the chart.", extra_tags="alert")
+        return redirect("home")
 
 
 class UploadFile(APIView):

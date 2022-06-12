@@ -1,7 +1,11 @@
 {% extends "partials/base.html" %}
 {% block content %}
-{% block messages %}
-    {% if message %}<div class='imp_message'>{{ message }}</div>{% endif %}
-{% endblock %}
+    {% if messages %}
+        {% for message in messages %}
+            <div class="d-grid gap-2">
+                <span {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</span>
+            </div>
+        {% endfor %}
+    {% endif %}
     <h1>Home Page</h1>
 {% endblock content %}
