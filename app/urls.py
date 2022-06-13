@@ -14,11 +14,9 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from crm import urls as crm_urls
-from crm.views import IndexView
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
 from django.urls import include, path
-from django.views.generic.base import TemplateView
 from user import urls as user_urls
 
 urlpatterns = [
@@ -35,5 +33,4 @@ urlpatterns = [
     ),
     path("", include(user_urls)),
     path("", include(crm_urls)),
-    path("", TemplateView.as_view(template_name="crm/dashboard.html"), name="index"),
 ]
