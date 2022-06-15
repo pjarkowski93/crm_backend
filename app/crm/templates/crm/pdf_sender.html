@@ -1,0 +1,14 @@
+{% extends 'partials/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+    {% block messages %}
+        {% if message %}<div class='alert alert-success'>{{ message }}</div>{% endif %}
+    {% endblock %}
+    <form method="POST" action="{% url 'send_email' %}" class="build-form">
+        {% csrf_token %}
+        {{ form|crispy }}
+        <input type="submit" value="Submit" class="btn btn-primary mt-3">
+    </form>
+
+{% endblock content %}

@@ -1,0 +1,16 @@
+{% extends 'partials/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+    <form method="GET" action="{% url 'chart3' %}" class="build-form">
+        {% csrf_token %}
+        {{ form|crispy }}
+        {{ select|crispy }}
+        <input type="submit" value="Submit" class="search_input">
+    </form>
+
+    {% if chart %} {{chart|safe}} {% endif %}
+
+    {% include 'crm/pdf_saver.html' %}
+
+{% endblock content %}
