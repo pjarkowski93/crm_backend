@@ -2,9 +2,7 @@
 {% load crispy_forms_tags %}
 
 {% block content %}
-    {% block messages %}
-        {% if message %}<div class='alert alert-success'>{{ message }}</div>{% endif %}
-    {% endblock %}
+    {% include "partials/message.html" %}
     <form method="POST" action="{% url 'send_email' %}" class="build-form">
         {% csrf_token %}
         {{ form|crispy }}

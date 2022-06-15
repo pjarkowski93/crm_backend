@@ -1,18 +1,10 @@
 {% extends "partials/base.html" %}
 {% block content %}
-    {% if messages %}
-        {% for message in messages %}
-            <div class="d-grid gap-2">
-                <span {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</span>
-            </div>
-        {% endfor %}
-    {% endif %}
+    {% include "partials/message.html" %}
     <body class="dashboard">
         <div class="container">
             <div class="description">
-                <!--Title-->
                 <h2 class="card-title"> System pozwala na:</h4>
-                <!--Text-->
                 <ul>
                     <li>Graficzne przedstawienie danych sprzedażowych</li>
                     <li>Tworzenie oraz wysłanie raportu na wskazany adres e-mail</li>
