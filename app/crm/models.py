@@ -29,8 +29,17 @@ class Client(models.Model):
         db_table = "client"
         permissions = [
             ("can_view_only_my_clients", "Can view only my clients"),
+            ("can_create_only_my_clients", "Can create only my clients"),
+            ("can_update_only_my_clients", "Can update only my clients"),
+            ("can_delete_only_my_clients", "Can delete only my clients"),
             ("can_view_my_group_clients", "Can view my goup clients"),
-            ("can_view_all_clients", "Can view all clients"),
+            ("can_create_my_group_clients", "Can create my goup clients"),
+            ("can_update_my_group_clients", "Can update my goup clients"),
+            ("can_delete_my_group_clients", "Can delete my goup clients"),
+            ("can_view_department_clients", "Can view department clients"),
+            ("can_create_department_clients", "Can create department clients"),
+            ("can_update_department_clients", "Can update department clients"),
+            ("can_delete_department_clients", "Can delete department clients"),
         ]
 
     def __str__(self) -> str:
@@ -57,8 +66,17 @@ class Sale(models.Model):
         db_table = "sale"
         permissions = [
             ("can_view_only_my_sales", "Can view only my sales"),
+            ("can_create_only_my_sales", "Can create only my sales"),
+            ("can_update_only_my_sales", "Can update only my sales"),
+            ("can_delete_only_my_sales", "Can delete only my sales"),
             ("can_view_my_group_sales", "Can view my goup sales"),
-            ("can_view_all_sales", "Can view all sales"),
+            ("can_create_my_group_sales", "Can create my goup sales"),
+            ("can_update_my_group_sales", "Can update my goup sales"),
+            ("can_delete_my_group_sales", "Can delete my goup sales"),
+            ("can_view_department_sales", "Can view department sales"),
+            ("can_create_department_sales", "Can create department sales"),
+            ("can_update_department_sales", "Can update department sales"),
+            ("can_delete_department_sales", "Can delete department sales"),
         ]
 
     def save(self, *args, **kwargs) -> None:
@@ -120,8 +138,17 @@ class Roadmap(models.Model):
         db_table = "Roadmap"
         permissions = [
             ("can_view_only_my_roadmaps", "Can view only my roadmaps"),
+            ("can_create_only_my_roadmaps", "Can create only my roadmaps"),
+            ("can_update_only_my_roadmaps", "Can update only my roadmaps"),
+            ("can_delete_only_my_roadmaps", "Can delete only my roadmaps"),
             ("can_view_my_group_roadmaps", "Can view my goup roadmaps"),
-            ("can_view_all_roadmaps", "Can view all roadmaps"),
+            ("can_create_my_group_roadmaps", "Can create my goup roadmaps"),
+            ("can_update_my_group_roadmaps", "Can update my goup roadmaps"),
+            ("can_delete_my_group_roadmaps", "Can delete my goup roadmaps"),
+            ("can_view_department_roadmaps", "Can view department roadmaps"),
+            ("can_create_department_roadmaps", "Can create department roadmaps"),
+            ("can_update_department_roadmaps", "Can update department roadmaps"),
+            ("can_delete_department_roadmaps", "Can delete department roadmaps"),
         ]
 
     def __str__(self) -> str:
@@ -136,3 +163,4 @@ class Files(models.Model):
     file = FileField(max_length=255)
     file_name = models.CharField(max_length=255)
     path_to_file = models.CharField(max_length=255)
+    created_datetime = models.DateTimeField(auto_now_add=True, null=True, blank=True)

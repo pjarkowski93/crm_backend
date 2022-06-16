@@ -1,3 +1,4 @@
+import datetime
 from dataclasses import dataclass
 from enum import Enum
 from typing import Any, Dict, List, Optional
@@ -160,6 +161,7 @@ class ImportSales(BaseImport):
 
     def validate_row_data(self, row: Dict[str, Any]) -> bool:
         self.row_errors = []
+        current_date = datetime.date.today()
 
         try:
             Client.objects.get(name=row["client"])
@@ -168,6 +170,16 @@ class ImportSales(BaseImport):
         except Client.MultipleObjectsReturned:
             self.row_errors.append(
                 f"Istnieje więcej niż jeden klient o podanej nazwie ({row['client']})"
+            )
+        if (
+            row["sale_date_from"].date() > current_date
+            and row["sale_date_to"].date() > current_date
+        ):
+            self.row_errors.append(
+                (
+                    "Data sprzedaży nie może być przyszłościowa "
+                    f"({row['sale_date_from'].date()} - {row['sale_date_to'].date()})"
+                )
             )
         try:
             float(row["amount"])

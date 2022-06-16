@@ -3,10 +3,15 @@
 
 {% block content %}
     {% include "partials/message.html" %}
+    <form method="GET" action="{% url 'send_email' %}" class="build-form">
+        {% csrf_token %}
+        {{ datetime_form|crispy }}
+        <input type="submit" value="Filtruj" class="btn btn-primary mt-3">
+    </form>
     <form method="POST" action="{% url 'send_email' %}" class="build-form">
         {% csrf_token %}
         {{ form|crispy }}
-        <input type="submit" value="Submit" class="btn btn-primary mt-3">
+        <input type="submit" value="Wyślij" class="btn btn-primary mt-3">
     </form>
 
 {% endblock content %}
