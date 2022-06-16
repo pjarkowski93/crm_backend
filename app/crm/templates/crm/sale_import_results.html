@@ -1,0 +1,122 @@
+{% if sales %}
+    {% if sales.created %}
+        <table class="table table-hover table-striped table-bordered">
+            <tr>
+                <th>client</th>
+                <th>amount</th>
+                <th>currency</th>
+                <th>brand</th>
+                <th>sale_date_from</th>
+                <th>sale_date_to</th>
+                <th>external_id</th>
+                <th>status</th>
+                <th>errors</th>
+                <th>updated_fields</th>
+            </tr>
+                {% for result in sales.created %}
+                    <tr>
+                        <th> {{ result.client }}</th>
+                        <th> {{ result.amount }}</th>
+                        <th> {{ result.currency }}</th>
+                        <th> {{ result.brand }}</th>
+                        <th> {{ result.sale_date_from }}</th>
+                        <th> {{ result.sale_date_to }}</th>
+                        <th> {{ result.external_id }}</th>
+                        <th> {{ result.status }}</th>
+                        <th> {{ result.errors }}</th>
+                        <th> {{ result.updated_fields }}</th>
+                    </tr>
+                {% endfor %}
+            </table>
+    {% endif %}
+    {% if sales.updated %}
+        <table class="table table-hover table-striped table-bordered">
+            <tr>
+                <th>client</th>
+                <th>amount</th>
+                <th>currency</th>
+                <th>brand</th>
+                <th>sale_date_from</th>
+                <th>sale_date_to</th>
+                <th>external_id</th>
+                <th>status</th>
+                <th>errors</th>
+                <th>updated_fields</th>
+            </tr>
+            {% for result in sales.updated %}
+                <tr>
+                    <th> {{ result.client }}</th>
+                    <th> {{ result.amount }}</th>
+                    <th> {{ result.currency }}</th>
+                    <th> {{ result.brand }}</th>
+                    <th> {{ result.sale_date_from }}</th>
+                    <th> {{ result.sale_date_to }}</th>
+                    <th> {{ result.external_id }}</th>
+                    <th> {{ result.status }}</th>
+                    <th> {{ result.errors }}</th>
+                    <th> {{ result.updated_fields }}</th>
+                </tr>
+            {% endfor %}
+        </table>
+    {% endif %}
+    {% if sales.skiped %}
+        <table class="table table-hover table-striped table-bordered">
+            <tr>
+                <th>client</th>
+                <th>amount</th>
+                <th>currency</th>
+                <th>brand</th>
+                <th>sale_date_from</th>
+                <th>sale_date_to</th>
+                <th>external_id</th>
+                <th>status</th>
+                <th>errors</th>
+                <th>updated_fields</th>
+            </tr>
+                {% for result in sales.skiped %}
+                    <tr>
+                        <th> {{ result.client }}</th>
+                        <th> {{ result.amount }}</th>
+                        <th> {{ result.currency }}</th>
+                        <th> {{ result.brand }}</th>
+                        <th> {{ result.sale_date_from }}</th>
+                        <th> {{ result.sale_date_to }}</th>
+                        <th> {{ result.external_id }}</th>
+                        <th> {{ result.status }}</th>
+                        <th> {{ result.errors }}</th>
+                        <th> {{ result.updated_fields }}</th>
+                    </tr>
+                {% endfor %}
+            </table>
+        {% endif %}
+        {% if sales.errors %}
+            <table class="table table-hover table-striped table-bordered">
+                <tr>
+                    <th>client</th>
+                    <th>amount</th>
+                    <th>currency</th>
+                    <th>brand</th>
+                    <th>sale_date_from</th>
+                    <th>sale_date_to</th>
+                    <th>external_id</th>
+                    <th>status</th>
+                    <th>errors</th>
+                    <th>updated_fields</th>
+                </tr>
+                {% for result in sales.errors %}
+                    <tr>
+                        <th> {{ result.client }}</th>
+                        <th> {{ result.amount }}</th>
+                        <th> {{ result.currency }}</th>
+                        <th> {{ result.brand }}</th>
+                        <th> {{ result.sale_date_from }}</th>
+                        <th> {{ result.sale_date_to }}</th>
+                        <th> {{ result.external_id }}</th>
+                        <th> {{ result.status }}</th>
+                        <th> {{ result.errors }}</th>
+                        <th> {{ result.updated_fields }}</th>
+                    </tr>
+                {% endfor %}
+            </table>
+        {% endif %}
+{% endif %}

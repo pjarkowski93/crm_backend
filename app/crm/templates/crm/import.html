@@ -1,0 +1,27 @@
+{% extends 'partials/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+    {% include "partials/message.html" %}
+    <form class="row g-4" method="POST" action="{% url 'import' %}" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="col-auto">
+            <label class="input-group-text">Zaimportuj</label>
+        </div>
+        <div class="col-auto">
+            <select class="form-select" name="class_name">
+                <option selected>Wybierz co chcesz zaimportować</option>
+                <option value="client">Klient</option>
+                <option value="sales">Sprzedaż</option>
+              </select>
+        </div>
+        <div class="col-auto">
+            <input  class="form-control" type="file" id="file" name="file_value">
+        </div>
+        <div class="col-auto">
+            <input type="submit" value="Zaimportuj" class="btn btn-primary">
+        </div>
+    </form>
+    {% include "crm/sale_import_results.html" %}
+    {% include "crm/client_import_results.html" %}
+{% endblock %}

@@ -1,10 +1,8 @@
-import datetime
 from uuid import uuid4
 
 from django.contrib.auth import get_user_model
 from django.core.validators import MinLengthValidator
 from django.db import models
-from django.db.models.functions import ExtractMonth
 from django.forms import FileField
 
 User = get_user_model()
@@ -79,10 +77,9 @@ class Sale(models.Model):
             12: "December",
         }
         if not self.pk or not self.months.all().exists():
-            sale_obj = super().save(*args, **kwargs)
+            super().save(*args, **kwargs)
             to_save = []
             _divaded_by = 0
-            print(sale_obj)
             for month in range(self.sale_date_from.month, self.sale_date_to.month):
                 _divaded_by += 1
             for month in range(self.sale_date_from.month, self.sale_date_to.month):

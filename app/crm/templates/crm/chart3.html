@@ -2,6 +2,7 @@
 {% load crispy_forms_tags %}
 
 {% block content %}
+    {% include "partials/message.html" %}
     <form method="GET" action="{% url 'chart3' %}" class="build-form">
         {% csrf_token %}
         {{ form|crispy }}

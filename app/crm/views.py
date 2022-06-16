@@ -5,7 +5,7 @@ from typing import Tuple
 import pdfkit
 import plotly.express as px
 from crm.forms import ClientForm, DateForm, PDFForm
-from crm.utils import EmailSender
+from crm.utils import EmailSender, ImportClient, ImportSales
 from dateutil.relativedelta import relativedelta
 from django.conf import settings
 from django.contrib import messages
@@ -16,6 +16,7 @@ from django.shortcuts import redirect, render
 from django_filters import rest_framework as rest_filters
 from rest_framework import permissions, viewsets
 from rest_framework.views import APIView
+from tablib import Dataset
 
 from . import models, serializers
 
@@ -61,6 +62,40 @@ class IndexView(APIView):
         return render(request, "crm/dashboard.html")
 
 
+class ImportExportSales(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, **kwargs):
+        return render(request, "crm/import.html")
+
+    def post(self, request, *args, **kwargs):
+        import_classes = {"sales": ImportSales, "client": ImportClient}
+        dataset = Dataset()
+        if not request.FILES.get("file_value"):
+            messages.warning(request, "Plik nie został wybrany.")
+            return redirect("import")
+        if request.data.get("class_name") not in list(import_classes.keys()):
+            messages.warning(request, "Proszę wybrać co chcesz zaimportować.")
+            return redirect("import")
+
+        new_sales = request.FILES["file_value"]
+        if not new_sales.name.endswith("xlsx"):
+            messages.warning(
+                request, "Nieprawidłowy format pliku. Obsługiwany tylko xlsx."
+            )
+            return redirect("import")
+
+        loaded_new_sales = dataset.load(new_sales.read(), format="xlsx")
+        import_class = import_classes[request.data["class_name"]]()
+        results = import_class.import_data(loaded_new_sales.dict)
+        messages.success(request, "Wynik importu")
+        return render(
+            request,
+            "crm/import.html",
+            context={request.data["class_name"]: results},
+        )
+
+
 class ChartView(APIView):
     """
     List all snippets, or create a new snippet.
@@ -97,7 +132,7 @@ class ChartView(APIView):
             context = {"chart": chart}
             return render(request, "crm/chart.html", context)
         messages.warning(request, "Brak danych dla podanych filtrów.")
-        return redirect("home")
+        return redirect("chart")
 
 
 class ChartView2(APIView):
@@ -126,7 +161,7 @@ class ChartView2(APIView):
             context = {"chart": chart}
             return render(request, "crm/chart2.html", context)
         messages.warning(request, "Brak danych dla podanych filtrów.")
-        return redirect("home")
+        return redirect("chart2")
 
 
 class ChartView3(APIView):
@@ -246,7 +281,7 @@ class ChartView3(APIView):
         messages.warning(
             request, "Brak danych dla podanych filtrów.", extra_tags="alert"
         )
-        return redirect("home")
+        return redirect("chart3")
 
 
 class UploadFile(APIView):
@@ -273,7 +308,15 @@ class UploadFile(APIView):
         else:
             return HttpResponse(status=400)
 
-        return redirect("home")
+        messages.success(
+            request, f"Plik został zapisany pod nazwą {file_name}.", extra_tags="alert"
+        )
+        context = {
+            "chart": chart,
+        }
+        redirect_to = request.META["HTTP_REFERER"]
+        return redirect(redirect_to, context=context)
+        # return render(request, f"crm/{redirect_to}.html", context=context)
 
 
 class SendPDFView(APIView):
@@ -295,8 +338,16 @@ class SendPDFView(APIView):
             subject=request_data["subject"],
             files=files_to_send,
         )
-        context = {
-            "form": PDFForm(initial=request_data),
-            "message": f"Email has been sent to {request_data['send_to']}.",
+        messages.success(
+            request,
+            f"Email has been sent to {request_data['send_to']}.",
+            extra_tags="alert",
+        )
+        initial_data = {
+            "files": request_data.getlist("files"),
+            "message": request_data.get("message"),
+            "send_to": request_data.get("send_to"),
+            "subject": request_data.get("subject"),
         }
+        context = {"form": PDFForm(initial=initial_data)}
         return render(request, "crm/pdf_sender.html", context=context)
