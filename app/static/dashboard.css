@@ -1,0 +1,37 @@
+.container{
+    position:absolute;
+    margin:auto;
+    top: 50%;
+    right: 0;
+    bottom:90%;
+    left: 0;
+   
+}
+.dashboard{
+    background: url("zdj crm.png");
+    background-size:cover;
+    align-items:center;
+    justify-content: center;
+    overflow: hidden;
+}
+.description{
+    font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    font-size: 24pt;
+    font-weight: bolder;
+    text-align:justify;
+    color: white;
+    background: rgb(172,104,52);
+    background: linear-gradient(90deg, rgba(172,104,52,1) 0%, rgba(234,182,118,1) 50%, rgba(252,176,69,1) 100%);
+    padding: 25px;
+    
+
+ 
+   
+}
+
+.gray-color{
+    color: #888;
+}
+.nav-color{
+    background-color: #eaf186;;
+}

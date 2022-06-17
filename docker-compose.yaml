@@ -3,33 +3,47 @@ version: "3.9"
 services:
   db:
     image: postgres
+    container_name: db
     volumes:
       - data-crm:/var/lib/postgresql/data
     networks:
       - main
+    ports:
+      - 5432:5432
     environment:
       - POSTGRES_DB=crm
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
   crm:
-    build: .
+    build:
+      context: .
+      args:
+        ENV_NAME: development
+    container_name: crm
+    env_file:
+      - .secrets.env
     volumes:
-      - app:/app
-    command: python manage.py runserver 0.0.0.0:8000
+      - ./app:/app
+    command: >
+      bash -c "python manage.py wait_for_db &&
+               python manage.py migrate &&
+               python manage.py runserver 0.0.0.0:8000"
     ports:
       - "8000:8000"
     networks:
       - main
+    tty: true
     environment:
-      - POSTGRES_NAME=crm
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
+      - DB_NAME=crm
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_HOST=db
+      - DB_PORT=5432
     depends_on:
       - db
 
 volumes:
   data-crm:
-  app:
 
 networks:
   main:

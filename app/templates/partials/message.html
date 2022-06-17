@@ -1,0 +1,7 @@
+{% if messages %}
+    {% for message in messages %}
+        <div class="d-grid gap-2">
+            <span {% if message.tags %} class="alert {{ message.tags }}"{% endif %}>{{ message }}</span>
+        </div>
+    {% endfor %}
+{% endif %}

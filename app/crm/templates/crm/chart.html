@@ -1,0 +1,12 @@
+{% extends 'partials/base.html' %}
+
+{% block content %}
+    {% include "partials/message.html" %}
+
+    {% if chart %}
+        {{chart|safe}}
+        {% include 'crm/pdf_saver.html' %}
+    {% endif %}
+
+
+{% endblock content %}
