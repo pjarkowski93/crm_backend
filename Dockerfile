@@ -32,4 +32,7 @@ RUN poetry config virtualenvs.create false \
 # Creating folders, and files for a project:
 COPY . /app
 
-CMD [ "gunicorn -b 0.0.0.0:80 wsgi" ]
+
+EXPOSE 80
+
+CMD "python manage.py runserver 0.0.0.0:80"
