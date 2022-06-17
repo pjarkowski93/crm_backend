@@ -4,7 +4,7 @@ from typing import Tuple
 
 import pdfkit
 import plotly.express as px
-from crm.forms import ClientForm, DateForm, PDFForm
+from crm.forms import ClientForm, DateForm, DateTimeForm, PDFForm
 from crm.utils import EmailSender, ImportClient, ImportSales
 from dateutil.relativedelta import relativedelta
 from django.conf import settings
@@ -17,6 +17,11 @@ from django_filters import rest_framework as rest_filters
 from rest_framework import permissions, viewsets
 from rest_framework.views import APIView
 from tablib import Dataset
+from user.permissions import (
+    ManagerPermissions,
+    TeamleaderPermissions,
+    TraderPermissions,
+)
 
 from . import models, serializers
 
@@ -103,9 +108,49 @@ class ChartView(APIView):
 
     permission_classes = [permissions.IsAuthenticated]
 
+    def get_queryset(self):
+        empty_qs = models.Sale.objects.none()
+        queryset = None
+        if self.request.user.is_staff:
+            queryset = models.Sale.objects.all()
+            return queryset
+        if (
+            TraderPermissions.can_view_only_my_sales
+            in self.request.user.get_group_permissions()
+        ):
+            if queryset:
+                queryset = queryset.filter(client__trader=self.request.user)
+            else:
+                queryset = models.Sale.objects.filter(client__trader=self.request.user)
+        if (
+            TeamleaderPermissions.can_view_my_group_sales
+            in self.request.user.get_group_permissions()
+        ):
+            if queryset:
+                queryset = queryset.filter(client__trader__team=self.request.user.team)
+            else:
+                queryset = models.Sale.objects.filter(
+                    client__trader__team=self.request.user.team
+                )
+        if (
+            ManagerPermissions.can_view_department_sales
+            in self.request.user.get_group_permissions()
+        ):
+            if queryset:
+                queryset = queryset.filter(
+                    client__trader__department=self.request.user.department
+                )
+            else:
+                queryset = models.Sale.objects.filter(
+                    client__trader__department=self.request.user.department
+                )
+        if not queryset:
+            return empty_qs
+        return queryset
+
     def get(self, request, **kwargs):
         sales = (
-            models.Sale.objects.all()
+            self.get_queryset()
             .values("brand", "client__name")
             .annotate(brand_amount=Sum("amount"))
             .annotate(
@@ -132,15 +177,55 @@ class ChartView(APIView):
             context = {"chart": chart}
             return render(request, "crm/chart.html", context)
         messages.warning(request, "Brak danych dla podanych filtrów.")
-        return redirect("chart")
+        return render(request, "crm/chart.html")
 
 
 class ChartView2(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
+    def get_queryset(self):
+        empty_qs = models.Sale.objects.none()
+        queryset = None
+        if self.request.user.is_staff:
+            queryset = models.Sale.objects.all()
+            return queryset
+        if (
+            TraderPermissions.can_view_only_my_sales
+            in self.request.user.get_group_permissions()
+        ):
+            if queryset:
+                queryset = queryset.filter(client__trader=self.request.user)
+            else:
+                queryset = models.Sale.objects.filter(client__trader=self.request.user)
+        if (
+            TeamleaderPermissions.can_view_my_group_sales
+            in self.request.user.get_group_permissions()
+        ):
+            if queryset:
+                queryset = queryset.filter(client__trader__team=self.request.user.team)
+            else:
+                queryset = models.Sale.objects.filter(
+                    client__trader__team=self.request.user.team
+                )
+        if (
+            ManagerPermissions.can_view_department_sales
+            in self.request.user.get_group_permissions()
+        ):
+            if queryset:
+                queryset = queryset.filter(
+                    client__trader__department=self.request.user.department
+                )
+            else:
+                queryset = models.Sale.objects.filter(
+                    client__trader__department=self.request.user.department
+                )
+        if not queryset:
+            return empty_qs
+        return queryset
+
     def get(self, request, **kwargs):
         all_sales = (
-            models.Sale.objects.all()
+            self.get_queryset()
             .values("client__name")
             .annotate(client_amount=Sum("amount"))
             .annotate(name=F("client__name"), amount=F("client_amount"))
@@ -161,11 +246,52 @@ class ChartView2(APIView):
             context = {"chart": chart}
             return render(request, "crm/chart2.html", context)
         messages.warning(request, "Brak danych dla podanych filtrów.")
-        return redirect("chart2")
+        return render(request, "crm/chart2.html")
 
 
 class ChartView3(APIView):
     permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        empty_qs = models.Sale.objects.none()
+        queryset = None
+        if self.request.user.is_staff:
+            queryset = models.Sale.objects.all()
+            return queryset
+        if (
+            TraderPermissions.can_view_only_my_sales
+            in self.request.user.get_group_permissions()
+        ):
+            if queryset:
+                queryset = queryset.filter(client__trader=self.request.user)
+            else:
+                queryset = models.Sale.objects.filter(client__trader=self.request.user)
+        if (
+            TeamleaderPermissions.can_view_my_group_sales
+            in self.request.user.get_group_permissions()
+        ):
+            if queryset:
+                queryset = queryset.filter(client__trader__team=self.request.user.team)
+            else:
+                queryset = models.Sale.objects.filter(
+                    client__trader__team=self.request.user.team
+                )
+        if (
+            ManagerPermissions.can_view_department_sales
+            in self.request.user.get_group_permissions()
+        ):
+            if queryset:
+                queryset = queryset.filter(
+                    client__trader__department=self.request.user.department
+                )
+            else:
+                queryset = models.Sale.objects.filter(
+                    client__trader__department=self.request.user.department
+                )
+        if not queryset:
+            return empty_qs
+        return queryset
+
     MONTHS = {
         1: "January",
         2: "February",
@@ -225,7 +351,7 @@ class ChartView3(APIView):
         )
 
     def get(self, request, **kwargs):
-        all_sales_items = models.Sale.objects.all()
+        all_sales_items = self.get_queryset()
         filtered_sales, data = self.filter_data(request, all_sales_items)
         start_date, end_date, client_name = data
         if filtered_sales:
@@ -281,7 +407,27 @@ class ChartView3(APIView):
         messages.warning(
             request, "Brak danych dla podanych filtrów.", extra_tags="alert"
         )
-        return redirect("chart3")
+        initial_data = {}
+        client_initial = {}
+        three_months = datetime.date.today() - relativedelta(months=+3)
+        current_date = datetime.date.today().strftime("%Y-%m-%d")
+        if start_date := self.request.data.get("start"):
+            initial_data.update({"start": start_date})
+        else:
+            initial_data.update({"start": three_months})
+        if end_date := self.request.data.get("end"):
+            initial_data.update({"end": end_date})
+        else:
+            initial_data.update({"end": current_date})
+        if client_name := request.GET.get("client"):
+            client_initial.update({"client": client_name})
+        date_form = DateForm(initial=initial_data)
+        client_form = ClientForm(initial=client_initial)
+        context = {
+            "form": date_form,
+            "select": client_form,
+        }
+        return render(request, "crm/chart3.html", context=context)
 
 
 class UploadFile(APIView):
@@ -316,14 +462,99 @@ class UploadFile(APIView):
         }
         redirect_to = request.META["HTTP_REFERER"]
         return redirect(redirect_to, context=context)
-        # return render(request, f"crm/{redirect_to}.html", context=context)
 
 
 class SendPDFView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
+    def get_queryset(self):
+        empty_qs = models.Files.objects.none()
+        queryset = None
+        if self.request.user.is_staff:
+            queryset = models.Files.objects.all()
+            return queryset
+        if (
+            TraderPermissions.can_view_only_my_sales
+            in self.request.user.get_group_permissions()
+        ):
+            if queryset:
+                queryset = queryset.filter(client__trader=self.request.user)
+            else:
+                queryset = models.Files.objects.filter(user=self.request.user)
+        if (
+            TeamleaderPermissions.can_view_my_group_sales
+            in self.request.user.get_group_permissions()
+        ):
+            if queryset:
+                queryset = queryset.filter(user__team=self.request.user.team)
+            else:
+                queryset = models.Files.objects.filter(
+                    user__team=self.request.user.team
+                )
+        if (
+            ManagerPermissions.can_view_department_sales
+            in self.request.user.get_group_permissions()
+        ):
+            if queryset:
+                queryset = queryset.filter(
+                    user__department=self.request.user.department
+                )
+            else:
+                queryset = models.Files.objects.filter(
+                    user__department=self.request.user.department
+                )
+        if not queryset:
+            return empty_qs
+        return queryset
+
+    def filter_queryset(self):
+        date_to_filter = self.request.query_params.get("my_date_field")
+        time_to_filter = self.request.query_params.get("my_time_field")
+        current_date = datetime.date.today().strftime("%Y-%m-%d")
+        current_datetime = datetime.datetime.now()
+        current_time = current_datetime.time().strftime("%H:%M")
+        if date_to_filter and time_to_filter:
+            datetime_to_filter = datetime.datetime.strptime(
+                f"{date_to_filter} {time_to_filter}", "%Y-%m-%d %H:%M"
+            )
+            return self.get_queryset().filter(created_datetime__gte=datetime_to_filter)
+        if date_to_filter and not time_to_filter:
+            datetime_to_filter = datetime.datetime.strptime(
+                f"{date_to_filter} {current_time}", "%Y-%m-%d %H:%M"
+            )
+            return self.get_queryset().filter(created_datetime__gte=date_to_filter)
+        if not date_to_filter and time_to_filter:
+            datetime_to_filter = datetime.datetime.strptime(
+                f"{current_date} {time_to_filter}", "%Y-%m-%d %H:%M"
+            )
+            return self.get_queryset().filter(created_datetime__gte=datetime_to_filter)
+        return self.get_queryset()
+
+    def get_initial_datetime_form(self):
+        date_to_filter = self.request.query_params.get("my_date_field")
+        time_to_filter = self.request.query_params.get("my_time_field")
+        current_date = datetime.date.today().strftime("%Y-%m-%d")
+        current_datetime = datetime.datetime.now()
+        current_time = current_datetime.time().strftime("%H:%M")
+        initial_data = {"my_date_field": current_date, "my_time_field": current_time}
+        if date_to_filter and time_to_filter:
+            initial_data["my_date_field"] = date_to_filter
+            initial_data["my_time_field"] = time_to_filter
+        if date_to_filter and not time_to_filter:
+            initial_data["my_date_field"] = date_to_filter
+        if not date_to_filter and time_to_filter:
+            initial_data["my_time_field"] = time_to_filter
+        return DateTimeForm(initial=initial_data)
+
     def get(self, request, **kwargs):
-        context = {"form": PDFForm(), "files": models.Files.objects.all()}
+        form = PDFForm()
+        datetime_form = self.get_initial_datetime_form()
+        choices = []
+        for file in self.filter_queryset().values("uuid", "file_name"):
+            choices.append((str(file["uuid"]), file["file_name"]))
+
+        form.fields["files"].choices = choices
+        context = {"form": form, "datetime_form": datetime_form}
         return render(request, "crm/pdf_sender.html", context=context)
 
     def post(self, request, *args, **kwargs):
