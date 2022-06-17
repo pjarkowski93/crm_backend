@@ -28,7 +28,13 @@ SECRET_KEY = os.environ["SECRET_KEY"]
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = []
+ALLOWED_HOSTS.extend(
+    filter(
+        None,
+        os.environ.get("ALLOWED_HOSTS", "").split(","),
+    )
+)
 
 
 # Application definition
@@ -135,7 +141,11 @@ STATICFILES_FINDERS = (
 STATICFILES_DIRS = (os.path.join(BASE_DIR, "static"),)
 
 STATIC_URL = "static/"
-STATIC_ROOT = ""
+MEDIA_URL = "/media/"
+
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
@@ -157,9 +167,6 @@ EMAIT_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = "spiocrmproject@gmail.com"
 EMAIL_HOST_PASSWORD = os.environ["EMAIL_PASSWORD"]
-
-MEDIA_ROOT = os.path.join(BASE_DIR, "media")
-MEDIA_URL = "/media/"
 
 CRISPY_TEMPLATE_PACK = "bootstrap4"
 LOGIN_URL = "login"
