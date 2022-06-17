@@ -7,7 +7,7 @@ build:
 release:
   image: web
   command:
-      - python manage.py collectstatic --noinput
+      - python manage.py wait_for_db && python manage.py migrate && python manage.py collectstatic --noinput
 
 run:
-  web: gunicorn app.wsgi
+  web: python manage.py runserver 0.0.0.0:80
