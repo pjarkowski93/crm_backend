@@ -21,7 +21,7 @@ RUN pip install "poetry==$POETRY_VERSION"
 
 # Copy only requirements to cache them in docker layer
 WORKDIR /app
-COPY poetry.lock pyproject.toml .flake8 /app/
+COPY poetry.lock pyproject.toml .flake8 Procfile heroku.yml /app/
 ADD app/ /app/
 # ADD templates/ /app/templates/
 
@@ -31,3 +31,7 @@ RUN poetry config virtualenvs.create false \
 
 # Creating folders, and files for a project:
 COPY . /app
+
+
+EXPOSE 80
+CMD gunicorn --bind 0.0.0.0:80 app.wsgi

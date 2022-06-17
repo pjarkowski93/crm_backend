@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 import os
 from pathlib import Path
 
+import django_on_heroku
 from django.contrib.messages import constants as messages
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -26,7 +27,20 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ["SECRET_KEY"]
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+
+
+def make_boolean(value):
+    if isinstance(value, str):
+        if value.lower() == "false":
+            return False
+        if value.lower() == "true":
+            return True
+    if isinstance(value, bool):
+        return value
+    return False
+
+
+DEBUG = make_boolean(os.environ["DEBUG"]) if os.environ.get("DEBUG") else True
 
 ALLOWED_HOSTS = []
 ALLOWED_HOSTS.extend(
@@ -98,6 +112,11 @@ DATABASES = {
         "PORT": os.environ.get("DB_PORT"),
     }
 }
+
+if db_url := os.environ.get("DATABASE_URL"):
+    import dj_database_url
+
+    DATABASES["default"] = dj_database_url.config(default=db_url)
 
 
 # Password validation
@@ -181,3 +200,5 @@ MESSAGE_TAGS = {
     messages.WARNING: "alert-warning",
     messages.ERROR: "alert-danger",
 }
+
+django_on_heroku.settings(locals())
