@@ -113,6 +113,11 @@ DATABASES = {
     }
 }
 
+if db_url := os.environ.get("DATABASE_URL"):
+    import dj_database_url
+
+    DATABASES["default"] = dj_database_url.config(default=db_url)
+
 
 # Password validation
 # https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators
